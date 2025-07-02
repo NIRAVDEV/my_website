@@ -5,7 +5,7 @@ import LoginScreen from '@/components/login-screen';
 import GalleryScreen from '@/components/gallery-screen';
 import type { Photo } from '@/types';
 
-const SECRET_CODE = process.env.NEXT_PUBLIC_SECRET_CODE || "1234";
+const SECRET_CODE = process.env.NEXT_PUBLIC_SECRET_CODE || "WhiteSaucePasta";
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
