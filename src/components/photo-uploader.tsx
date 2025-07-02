@@ -4,7 +4,6 @@ import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { smartTagMedia } from '@/ai/flows/smart-tagging';
 import { Upload, Loader2 } from 'lucide-react';
 import type { Media } from '@/types';
 
@@ -37,24 +36,22 @@ export default function PhotoUploader({ onAddMedia }: PhotoUploaderProps) {
     reader.onload = async () => {
       const mediaDataUri = reader.result as string;
       try {
-        const result = await smartTagMedia({ mediaDataUri });
         const newMedia: Media = {
           id: new Date().toISOString() + Math.random(),
           src: mediaDataUri,
-          tags: result.tags,
           type: file.type.startsWith('image/') ? 'image' : 'video',
         };
         onAddMedia(newMedia);
         toast({
           title: 'Upload Successful',
-          description: 'Your media and its smart tags have been added.',
+          description: 'Your media has been added to the vault.',
         });
       } catch (error) {
-        console.error('Smart tagging failed:', error);
+        console.error('Upload failed:', error);
         toast({
           variant: 'destructive',
-          title: 'AI Tagging Failed',
-          description: 'Could not generate tags. The media was not added.',
+          title: 'Upload Failed',
+          description: 'The media could not be added.',
         });
       } finally {
         setIsLoading(false);
@@ -78,7 +75,7 @@ export default function PhotoUploader({ onAddMedia }: PhotoUploaderProps) {
   }
 
   return (
-    <div className="rounded-lg border-2 border-dashed border-border p-8 text-center transition-colors hover:border-accent/80 bg-card/50">
+    <div className="rounded-lg border-2 border-dashed border-border p-4 text-center transition-colors hover:border-accent/80 bg-card/50 md:p-8">
       <Input
         type="file"
         ref={fileInputRef}
@@ -91,7 +88,7 @@ export default function PhotoUploader({ onAddMedia }: PhotoUploaderProps) {
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            Uploading & Tagging...
+            Uploading...
           </>
         ) : (
           <>

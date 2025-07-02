@@ -9,10 +9,9 @@ type GalleryScreenProps = {
   onLogout: () => void;
   onAddMedia: (media: Media) => void;
   onDeleteMedia: (id: string) => void;
-  onUpdateMedia: (id: string, tags: string[]) => void;
 };
 
-export default function GalleryScreen({ mediaItems, onLogout, onAddMedia, onDeleteMedia, onUpdateMedia }: GalleryScreenProps) {
+export default function GalleryScreen({ mediaItems, onLogout, onAddMedia, onDeleteMedia }: GalleryScreenProps) {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-10 border-b border-border/50 bg-background/80 backdrop-blur-sm">
@@ -38,13 +37,12 @@ export default function GalleryScreen({ mediaItems, onLogout, onAddMedia, onDele
             </p>
           </div>
         ) : (
-          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {mediaItems.map((media) => (
               <PhotoCard 
                 key={media.id} 
                 media={media} 
                 onDelete={onDeleteMedia} 
-                onUpdate={onUpdateMedia} 
               />
             ))}
           </div>

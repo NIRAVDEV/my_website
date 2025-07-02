@@ -45,13 +45,6 @@ export default function Home() {
     setMediaItems(updatedMedia);
   };
 
-  const handleUpdateMedia = (id: string, tags: string[]) => {
-    const updatedMedia = mediaItems.map(item => 
-      item.id === id ? { ...item, tags } : item
-    );
-    setMediaItems(updatedMedia);
-  };
-
   if (!isClient) {
     return null; // or a loading spinner
   }
@@ -66,7 +59,6 @@ export default function Home() {
       onLogout={handleLogout} 
       onAddMedia={handleAddMedia}
       onDeleteMedia={handleDeleteMedia}
-      onUpdateMedia={handleUpdateMedia}
     />
   );
 }
