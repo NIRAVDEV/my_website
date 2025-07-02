@@ -17,8 +17,6 @@ export default function Home() {
     const sessionActive = sessionStorage.getItem('isLoggedIn') === 'true';
     if (sessionActive) {
       setIsLoggedIn(true);
-      const storedMedia = JSON.parse(sessionStorage.getItem('mediaItems') || '[]');
-      setMediaItems(storedMedia);
     }
   }, []);
   
@@ -33,7 +31,6 @@ export default function Home() {
 
   const handleLogout = () => {
     sessionStorage.removeItem('isLoggedIn');
-    sessionStorage.removeItem('mediaItems');
     setIsLoggedIn(false);
     setMediaItems([]);
   };
@@ -41,13 +38,11 @@ export default function Home() {
   const handleAddMedia = (media: Media) => {
     const updatedMedia = [...mediaItems, media];
     setMediaItems(updatedMedia);
-    sessionStorage.setItem('mediaItems', JSON.stringify(updatedMedia));
   };
 
   const handleDeleteMedia = (id: string) => {
     const updatedMedia = mediaItems.filter(item => item.id !== id);
     setMediaItems(updatedMedia);
-    sessionStorage.setItem('mediaItems', JSON.stringify(updatedMedia));
   };
 
   const handleUpdateMedia = (id: string, tags: string[]) => {
@@ -55,7 +50,6 @@ export default function Home() {
       item.id === id ? { ...item, tags } : item
     );
     setMediaItems(updatedMedia);
-    sessionStorage.setItem('mediaItems', JSON.stringify(updatedMedia));
   };
 
   if (!isClient) {
