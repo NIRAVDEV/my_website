@@ -28,9 +28,10 @@ import { MoreVertical, Trash2, Share2 } from 'lucide-react';
 type MediaCardProps = {
   media: Media;
   onDelete: (id: string) => void;
+  onOpen: () => void;
 };
 
-export default function PhotoCard({ media, onDelete }: MediaCardProps) {
+export default function PhotoCard({ media, onDelete, onOpen }: MediaCardProps) {
   const { toast } = useToast();
   const altText = `User uploaded ${media.type}`;
 
@@ -70,19 +71,18 @@ export default function PhotoCard({ media, onDelete }: MediaCardProps) {
     <>
       <Card className="group overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1 bg-card">
         <CardContent className="p-0 relative">
-          <div className="aspect-square relative">
+          <div className="aspect-square relative cursor-pointer" onClick={onOpen}>
               {media.type === 'image' ? (
                 <Image
                   src={media.src}
                   alt={altText}
                   fill
                   className="object-cover"
-                  sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
                 />
               ) : (
                 <video
                   src={media.src}
-                  controls
                   className="object-cover w-full h-full"
                 >
                   Your browser does not support the video tag.
