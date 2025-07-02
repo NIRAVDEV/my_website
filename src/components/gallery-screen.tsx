@@ -1,4 +1,4 @@
-import { LogOut, ShieldCheck } from 'lucide-react';
+import { LogOut, ShieldCheck, Loader2 } from 'lucide-react';
 import type { Media } from '@/types';
 import { Button } from '@/components/ui/button';
 import PhotoUploader from './photo-uploader';
@@ -10,9 +10,10 @@ type GalleryScreenProps = {
   onAddMedia: (media: Media) => void;
   onDeleteMedia: (id: string) => void;
   onOpenMedia: (index: number) => void;
+  isLoading: boolean;
 };
 
-export default function GalleryScreen({ mediaItems, onLogout, onAddMedia, onDeleteMedia, onOpenMedia }: GalleryScreenProps) {
+export default function GalleryScreen({ mediaItems, onLogout, onAddMedia, onDeleteMedia, onOpenMedia, isLoading }: GalleryScreenProps) {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-10 border-b border-border/50 bg-background/80 backdrop-blur-sm">
@@ -30,7 +31,12 @@ export default function GalleryScreen({ mediaItems, onLogout, onAddMedia, onDele
       <main className="container mx-auto p-4 md:p-8">
         <PhotoUploader onAddMedia={onAddMedia} />
 
-        {mediaItems.length === 0 ? (
+        {isLoading ? (
+          <div className="mt-16 flex justify-center items-center">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <p className="ml-4 text-muted-foreground">Loading your vault...</p>
+          </div>
+        ) : mediaItems.length === 0 ? (
           <div className="mt-16 text-center">
             <h2 className="text-2xl font-semibold">Your vault is empty</h2>
             <p className="mt-2 text-muted-foreground">

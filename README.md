@@ -2,6 +2,26 @@
 
 This is a Next.js application built with Firebase Studio that provides a secure, session-based gallery for your photos and videos.
 
+## Storage and Deployment
+
+### VPS (Virtual Private Server)
+
+When deployed to a VPS, this application saves uploaded photos and videos directly to the server's filesystem in the `public/uploads` directory. This provides persistent storage as long as the server is running and the files are not manually deleted. This is the recommended approach for a self-hosted setup.
+
+### Vercel and Serverless Environments
+
+If you plan to deploy this application to a serverless platform like Vercel, it is **crucial** to understand that their filesystems are **ephemeral**. This means any files uploaded to the `public/uploads` directory will be **lost** when the serverless instance is recycled, which can happen frequently (e.g., on new deployments, periods of inactivity, etc.).
+
+For persistent storage on Vercel or similar platforms, you **must** use an external object storage service. Popular choices include:
+
+*   [Firebase Storage](https://firebase.google.com/docs/storage)
+*   [AWS S3](https://aws.amazon.com/s3/)
+*   [Cloudinary](https://cloudinary.com/)
+*   [Vercel Blob](https://vercel.com/docs/storage/vercel-blob)
+
+You would need to modify the API endpoints in `src/app/api/` to upload to and delete from your chosen storage provider instead of the local filesystem.
+
+
 ## Deployment Guide for a VPS (Virtual Private Server)
 
 This guide provides the steps to deploy your Green Vault application on a Linux-based VPS (like Ubuntu).

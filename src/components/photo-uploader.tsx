@@ -20,7 +20,9 @@ export default function PhotoUploader({ onAddMedia }: PhotoUploaderProps) {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+    const fileType = file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' : null;
+
+    if (!fileType) {
         toast({
             variant: 'destructive',
             title: 'Invalid File Type',
@@ -36,22 +38,37 @@ export default function PhotoUploader({ onAddMedia }: PhotoUploaderProps) {
     reader.onload = async () => {
       const mediaDataUri = reader.result as string;
       try {
-        const newMedia: Media = {
-          id: new Date().toISOString() + Math.random(),
-          src: mediaDataUri,
-          type: file.type.startsWith('image/') ? 'image' : 'video',
-        };
-        onAddMedia(newMedia);
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            mediaDataUri,
+            fileName: file.name,
+            type: fileType,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || 'Upload failed');
+        }
+        
+        onAddMedia(result.media);
         toast({
           title: 'Upload Successful',
-          description: 'Your media has been added to the vault.',
+          description: 'Your media has been saved to the server.',
         });
+
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
         console.error('Upload failed:', error);
         toast({
           variant: 'destructive',
           title: 'Upload Failed',
-          description: 'The media could not be added.',
+          description: errorMessage,
         });
       } finally {
         setIsLoading(false);
@@ -98,7 +115,7 @@ export default function PhotoUploader({ onAddMedia }: PhotoUploaderProps) {
         )}
       </Button>
       <p className="mt-4 text-sm text-muted-foreground">
-        Your photos and videos are uploaded to this session only. They will be gone on refresh.
+        Your photos and videos are uploaded to the server.
       </p>
     </div>
   );
