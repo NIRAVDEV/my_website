@@ -4,15 +4,15 @@ import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { smartTagPhoto } from '@/ai/flows/smart-tagging';
+import { smartTagMedia } from '@/ai/flows/smart-tagging';
 import { Upload, Loader2 } from 'lucide-react';
-import type { Photo } from '@/types';
+import type { Media } from '@/types';
 
 type PhotoUploaderProps = {
-  onAddPhoto: (photo: Photo) => void;
+  onAddMedia: (media: Media) => void;
 };
 
-export default function PhotoUploader({ onAddPhoto }: PhotoUploaderProps) {
+export default function PhotoUploader({ onAddMedia }: PhotoUploaderProps) {
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -21,11 +21,11 @@ export default function PhotoUploader({ onAddPhoto }: PhotoUploaderProps) {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
+    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
         toast({
             variant: 'destructive',
             title: 'Invalid File Type',
-            description: 'Please upload an image file.',
+            description: 'Please upload an image or video file.',
         });
         return;
     }
@@ -35,25 +35,26 @@ export default function PhotoUploader({ onAddPhoto }: PhotoUploaderProps) {
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = async () => {
-      const photoDataUri = reader.result as string;
+      const mediaDataUri = reader.result as string;
       try {
-        const result = await smartTagPhoto({ photoDataUri });
-        const newPhoto: Photo = {
+        const result = await smartTagMedia({ mediaDataUri });
+        const newMedia: Media = {
           id: new Date().toISOString() + Math.random(),
-          src: photoDataUri,
+          src: mediaDataUri,
           tags: result.tags,
+          type: file.type.startsWith('image/') ? 'image' : 'video',
         };
-        onAddPhoto(newPhoto);
+        onAddMedia(newMedia);
         toast({
           title: 'Upload Successful',
-          description: 'Your photo and its smart tags have been added.',
+          description: 'Your media and its smart tags have been added.',
         });
       } catch (error) {
         console.error('Smart tagging failed:', error);
         toast({
           variant: 'destructive',
           title: 'AI Tagging Failed',
-          description: 'Could not generate tags. The photo was not added.',
+          description: 'Could not generate tags. The media was not added.',
         });
       } finally {
         setIsLoading(false);
@@ -83,7 +84,7 @@ export default function PhotoUploader({ onAddPhoto }: PhotoUploaderProps) {
         ref={fileInputRef}
         onChange={handleFileChange}
         className="hidden"
-        accept="image/*"
+        accept="image/*,video/*"
         disabled={isLoading}
       />
       <Button onClick={handleClick} disabled={isLoading} size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
@@ -95,12 +96,12 @@ export default function PhotoUploader({ onAddPhoto }: PhotoUploaderProps) {
         ) : (
           <>
             <Upload className="mr-2 h-5 w-5" />
-            Upload Photo
+            Upload Media
           </>
         )}
       </Button>
       <p className="mt-4 text-sm text-muted-foreground">
-        Your photos are uploaded to this session only. They will be gone on refresh.
+        Your photos and videos are uploaded to this session only. They will be gone on refresh.
       </p>
     </div>
   );

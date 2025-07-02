@@ -3,13 +3,13 @@
 import { useState, useEffect } from 'react';
 import LoginScreen from '@/components/login-screen';
 import GalleryScreen from '@/components/gallery-screen';
-import type { Photo } from '@/types';
+import type { Media } from '@/types';
 
 const SECRET_CODE = process.env.NEXT_PUBLIC_SECRET_CODE || "WhiteSaucePasta";
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [mediaItems, setMediaItems] = useState<Media[]>([]);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -17,8 +17,8 @@ export default function Home() {
     const sessionActive = sessionStorage.getItem('isLoggedIn') === 'true';
     if (sessionActive) {
       setIsLoggedIn(true);
-      const storedPhotos = JSON.parse(sessionStorage.getItem('photos') || '[]');
-      setPhotos(storedPhotos);
+      const storedMedia = JSON.parse(sessionStorage.getItem('mediaItems') || '[]');
+      setMediaItems(storedMedia);
     }
   }, []);
   
@@ -33,15 +33,29 @@ export default function Home() {
 
   const handleLogout = () => {
     sessionStorage.removeItem('isLoggedIn');
-    sessionStorage.removeItem('photos');
+    sessionStorage.removeItem('mediaItems');
     setIsLoggedIn(false);
-    setPhotos([]);
+    setMediaItems([]);
   };
 
-  const handleAddPhoto = (photo: Photo) => {
-    const updatedPhotos = [...photos, photo];
-    setPhotos(updatedPhotos);
-    sessionStorage.setItem('photos', JSON.stringify(updatedPhotos));
+  const handleAddMedia = (media: Media) => {
+    const updatedMedia = [...mediaItems, media];
+    setMediaItems(updatedMedia);
+    sessionStorage.setItem('mediaItems', JSON.stringify(updatedMedia));
+  };
+
+  const handleDeleteMedia = (id: string) => {
+    const updatedMedia = mediaItems.filter(item => item.id !== id);
+    setMediaItems(updatedMedia);
+    sessionStorage.setItem('mediaItems', JSON.stringify(updatedMedia));
+  };
+
+  const handleUpdateMedia = (id: string, tags: string[]) => {
+    const updatedMedia = mediaItems.map(item => 
+      item.id === id ? { ...item, tags } : item
+    );
+    setMediaItems(updatedMedia);
+    sessionStorage.setItem('mediaItems', JSON.stringify(updatedMedia));
   };
 
   if (!isClient) {
@@ -52,5 +66,13 @@ export default function Home() {
     return <LoginScreen onLogin={handleLogin} />;
   }
 
-  return <GalleryScreen photos={photos} onLogout={handleLogout} onAddPhoto={handleAddPhoto} />;
+  return (
+    <GalleryScreen 
+      mediaItems={mediaItems} 
+      onLogout={handleLogout} 
+      onAddMedia={handleAddMedia}
+      onDeleteMedia={handleDeleteMedia}
+      onUpdateMedia={handleUpdateMedia}
+    />
+  );
 }
