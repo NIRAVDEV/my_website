@@ -26,9 +26,9 @@ const FormSchema = z.object({
 
 // Hardcoded user for demonstration purposes
 const SERVER_ACCOUNTS = [
-    { username: "mythical_user", password: "password123", mythicalCoins: 100 },
-    { username: "gallery_fan", password: "secure_password", mythicalCoins: 50 },
-    { username: "Admin", password: "admin123", mythicalCoins: 1000 },
+    { username: "mythical_user", password: "password123", mythicalCoins: 0 },
+    { username: "gallery_fan", password: "secure_password", mythicalCoins: 0 },
+    { username: "Admin", password: "admin123", mythicalCoins: 0 },
 ];
 
 export default function LoginPage() {

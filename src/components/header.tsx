@@ -46,6 +46,7 @@ export default function Header() {
   const navLinks = [
     { href: '/gallery', label: 'Gallery' },
     { href: '/earn', label: 'Earn Coins' },
+    { href: '/redeem', label: 'Redeem' },
   ];
 
   const NavLink = ({ href, children }: { href: string, children: React.ReactNode }) => (
