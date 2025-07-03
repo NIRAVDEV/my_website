@@ -1,30 +1,36 @@
-# Green Vault - A Next.js Photo & Video Gallery
+# MythicVault - A Next.js Private Gallery & Rewards App
 
-This is a Next.js application built with Firebase Studio that provides a secure, session-based gallery for your photos and videos.
+This is a Next.js application built with Firebase Studio that provides a secure, session-based gallery for your photos and videos, along with a virtual currency and redemption system.
+
+## Key Features
+
+*   **Private Gallery**: Upload and view your photos and videos in a secure, login-protected environment.
+*   **Virtual Currency**: Earn "MythicalCoins" by completing tasks.
+*   **Redemption System**: Redeem coins for rewards like Google Play codes or UPI transfers.
+*   **Admin Panel**: A special panel for administrators to manage user redemption requests.
+*   **Local Storage**: Designed to run on a VPS, storing all media directly on the server's filesystem.
+
+---
 
 ## Storage and Deployment
 
 ### VPS (Virtual Private Server)
 
-When deployed to a VPS, this application saves uploaded photos and videos directly to the server's filesystem in the `public/uploads` directory. This provides persistent storage as long as the server is running and the files are not manually deleted. This is the recommended approach for a self-hosted setup.
+When deployed to a VPS, this application saves uploaded photos and videos directly to the server's filesystem in the `public/uploads` directory. This provides persistent storage as long as the server is running and the files are not manually deleted. **This is the recommended approach for a self-hosted setup.**
+
+Redemption requests are currently stored in the browser's `localStorage` for demonstration purposes. For a full production application, you would replace this with a database backend.
 
 ### Vercel and Serverless Environments
 
-If you plan to deploy this application to a serverless platform like Vercel, it is **crucial** to understand that their filesystems are **ephemeral**. This means any files uploaded to the `public/uploads` directory will be **lost** when the serverless instance is recycled, which can happen frequently (e.g., on new deployments, periods of inactivity, etc.).
+If you plan to deploy this application to a serverless platform like Vercel, it is **crucial** to understand that their filesystems are **ephemeral**. This means any files uploaded to the `public/uploads` directory will be **lost** when the serverless instance is recycled, which can happen frequently.
 
-For persistent storage on Vercel or similar platforms, you **must** use an external object storage service. Popular choices include:
+For persistent storage on Vercel or similar platforms, you **must** use an external object storage service (like Firebase Storage, AWS S3, Cloudinary, Vercel Blob) and likely a database for redemption requests. You would need to modify the API endpoints in `src/app/api/` and the logic in the redeem/admin pages to use these external services.
 
-*   [Firebase Storage](https://firebase.google.com/docs/storage)
-*   [AWS S3](https://aws.amazon.com/s3/)
-*   [Cloudinary](https://cloudinary.com/)
-*   [Vercel Blob](https://vercel.com/docs/storage/vercel-blob)
-
-You would need to modify the API endpoints in `src/app/api/` to upload to and delete from your chosen storage provider instead of the local filesystem.
-
+---
 
 ## Deployment Guide for a VPS (Virtual Private Server)
 
-This guide provides the steps to deploy your Green Vault application on a Linux-based VPS (like Ubuntu).
+This guide provides the steps to deploy your MythicVault application on a Linux-based VPS (like Ubuntu).
 
 ### Prerequisites
 
@@ -55,22 +61,7 @@ Install the necessary Node.js packages.
 npm install
 ```
 
-### Step 3: Configure Environment Variables
-
-Create a `.env.local` file in the root of your project. This file will hold your secret code and any other environment-specific variables.
-
-```bash
-touch .env.local
-```
-
-Now, open the file and add your secret code. **Do not use the default value in production.**
-
-```ini
-# .env.local
-NEXT_PUBLIC_SECRET_CODE="YourSuperSecretAndHardToGuessCode"
-```
-
-### Step 4: Build the Application
+### Step 3: Build the Application
 
 Create a production-optimized build of your Next.js app.
 
@@ -78,31 +69,31 @@ Create a production-optimized build of your Next.js app.
 npm run build
 ```
 
-### Step 5: Run the Application with PM2
+### Step 4: Run the Application with PM2
 
 Use PM2 to start your application and ensure it runs continuously. The default port for `npm start` is 3000.
 
 ```bash
-# Start the app with the name "green-vault"
-pm2 start npm --name "green-vault" -- start
+# Start the app with the name "mythic-vault"
+pm2 start npm --name "mythic-vault" -- start
 
 # To see the status of your app
 pm2 list
 
 # To monitor logs
-pm2 logs green-vault
+pm2 logs mythic-vault
 ```
 
 Your app is now running, but it's likely only accessible on `http://<your-vps-ip>:3000`. The next step makes it accessible on the standard web ports (80/443).
 
-### Step 6: Set Up Nginx as a Reverse Proxy
+### Step 5: Set Up Nginx as a Reverse Proxy
 
 Configure Nginx to direct traffic from port 80 (and 443 for HTTPS) to your running application on port 3000.
 
 1.  Create a new Nginx configuration file:
 
     ```bash
-    sudo nano /etc/nginx/sites-available/green-vault
+    sudo nano /etc/nginx/sites-available/mythic-vault
     ```
 
 2.  Paste the following configuration into the file. Replace `your_domain.com` with your actual domain name or your VPS IP address.
@@ -126,7 +117,7 @@ Configure Nginx to direct traffic from port 80 (and 443 for HTTPS) to your runni
 3.  Enable the configuration by creating a symbolic link:
 
     ```bash
-    sudo ln -s /etc/nginx/sites-available/green-vault /etc/nginx/sites-enabled/
+    sudo ln -s /etc/nginx/sites-available/mythic-vault /etc/nginx/sites-enabled/
     ```
 
 4.  Test your Nginx configuration for errors:
@@ -141,7 +132,7 @@ Configure Nginx to direct traffic from port 80 (and 443 for HTTPS) to your runni
     sudo systemctl restart nginx
     ```
 
-Your Green Vault application should now be live and accessible via your domain or IP address. For production use, it is highly recommended to also [configure SSL with Let's Encrypt](https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-22-04) to enable HTTPS.
+Your MythicVault application should now be live and accessible via your domain or IP address. For production use, it is highly recommended to also [configure SSL with Let's Encrypt](https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-22-04) to enable HTTPS.
 
 ## Available Scripts
 
