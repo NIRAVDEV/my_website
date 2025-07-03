@@ -1,6 +1,5 @@
 "use client";
 
-import Script from 'next/script';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -24,9 +23,12 @@ export default function AdUnit({ onAdComplete }: AdUnitProps) {
     <div className="w-full max-w-sm text-center">
       {/* 
         This is where you would place the script from your ad network.
-        The `onLoad` callback can be used to initialize the ad unit
-        once the script is ready.
+        To use it, you'll need to:
+        1. Uncomment the <Script> component below.
+        2. Add `import Script from 'next/script';` at the top of this file.
+        3. Replace the placeholder 'src' with your actual ad network script URL.
       */}
+      {/*
       <Script
         src="https://your-ad-network.com/ad-script.js" // <-- REPLACE with your ad network's script URL
         strategy="lazyOnload"
@@ -38,6 +40,7 @@ export default function AdUnit({ onAdComplete }: AdUnitProps) {
           console.error('Failed to load ad script', e);
         }}
       />
+      */}
       
       {/* 
         This is a placeholder for where the ad would be displayed.
