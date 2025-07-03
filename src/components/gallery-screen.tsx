@@ -46,9 +46,9 @@ export default function GalleryScreen({ mediaItems, onAddMedia, onDeleteMedia, o
                   <Info className="h-5 w-5" />
                   How to Share Your Gallery
                 </AlertDialogTitle>
-                <AlertDialogDescription>
-                  <div className="space-y-4 text-sm text-muted-foreground">
-                    <p className="pt-2">
+                <AlertDialogDescription asChild>
+                  <div className="space-y-4 pt-2">
+                    <p>
                       Your gallery is private and accessible only when you are logged in. To share your entire vault with a trusted person, they will need to log in with the same account credentials.
                     </p>
                     <p>
