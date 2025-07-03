@@ -1,162 +1,92 @@
-"use client";
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Mountain, Video, Gem } from 'lucide-react';
 
-import { useState, useEffect } from 'react';
-import LoginScreen from '@/components/login-screen';
-import GalleryScreen from '@/components/gallery-screen';
-import MediaViewer from '@/components/media-viewer';
-import type { Media } from '@/types';
-import { useToast } from '@/hooks/use-toast';
-
-const SECRET_CODE = process.env.NEXT_PUBLIC_SECRET_CODE || "WhiteSaucePasta";
-
-export default function Home() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [mediaItems, setMediaItems] = useState<Media[]>([]);
-  const [isClient, setIsClient] = useState(false);
-  const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(null);
-  const [isLoadingMedia, setIsLoadingMedia] = useState(true);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    setIsClient(true);
-    const sessionActive = sessionStorage.getItem('isLoggedIn') === 'true';
-    if (sessionActive) {
-      setIsLoggedIn(true);
-    } else {
-      setIsLoadingMedia(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isLoggedIn) {
-      const fetchMedia = async () => {
-        try {
-          setIsLoadingMedia(true);
-          const response = await fetch('/api/media');
-          if (!response.ok) {
-            throw new Error('Failed to fetch media');
-          }
-          const data: Media[] = await response.json();
-          setMediaItems(data);
-        } catch (error) {
-          console.error(error);
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Could not load media from the server.",
-          });
-        } finally {
-          setIsLoadingMedia(false);
-        }
-      };
-      fetchMedia();
-    }
-  }, [isLoggedIn, toast]);
-  
-  const handleLogin = (code: string): boolean => {
-    if (code === SECRET_CODE) {
-      sessionStorage.setItem('isLoggedIn', 'true');
-      setIsLoggedIn(true);
-      return true;
-    }
-    return false;
-  };
-
-  const handleLogout = () => {
-    sessionStorage.removeItem('isLoggedIn');
-    setIsLoggedIn(false);
-    setMediaItems([]);
-    setSelectedMediaIndex(null);
-  };
-
-  const handleAddMedia = (media: Media) => {
-    // Add new media to the top of the list
-    setMediaItems(prevMedia => [media, ...prevMedia]);
-  };
-
-  const handleDeleteMedia = async (id: string) => {
-    const originalMedia = [...mediaItems];
-    const deletedIndex = mediaItems.findIndex(item => item.id === id);
-    
-    // Optimistically update UI
-    const updatedMedia = mediaItems.filter(item => item.id !== id);
-    setMediaItems(updatedMedia);
-
-    if (selectedMediaIndex === deletedIndex) {
-      setSelectedMediaIndex(null);
-    } else if (selectedMediaIndex !== null && selectedMediaIndex > deletedIndex) {
-      setSelectedMediaIndex(selectedMediaIndex - 1);
-    }
-    
-    try {
-      const response = await fetch('/api/media', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileName: id }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete on server');
-      }
-    } catch (error) {
-      console.error('Failed to delete media:', error);
-      toast({
-        variant: "destructive",
-        title: "Deletion Failed",
-        description: "Could not delete media. Restoring view.",
-      });
-      // Revert UI change on failure
-      setMediaItems(originalMedia);
-    }
-  };
-
-  const handleOpenMedia = (index: number) => {
-    setSelectedMediaIndex(index);
-  };
-
-  const handleCloseMedia = () => {
-    setSelectedMediaIndex(null);
-  };
-
-  const handleNextMedia = () => {
-    if (selectedMediaIndex !== null && mediaItems.length > 1) {
-      setSelectedMediaIndex((prevIndex) => (prevIndex! + 1) % mediaItems.length);
-    }
-  };
-
-  const handlePrevMedia = () => {
-    if (selectedMediaIndex !== null && mediaItems.length > 1) {
-      setSelectedMediaIndex((prevIndex) => (prevIndex! - 1 + mediaItems.length) % mediaItems.length);
-    }
-  };
-
-  if (!isClient) {
-    return null; // or a loading spinner
-  }
-
-  if (!isLoggedIn) {
-    return <LoginScreen onLogin={handleLogin} />;
-  }
-
+export default function HomePage() {
   return (
-    <>
-      <GalleryScreen 
-        mediaItems={mediaItems} 
-        onLogout={handleLogout} 
-        onAddMedia={handleAddMedia}
-        onDeleteMedia={handleDeleteMedia}
-        onOpenMedia={handleOpenMedia}
-        isLoading={isLoadingMedia}
-      />
-      {selectedMediaIndex !== null && (
-        <MediaViewer
-          mediaItems={mediaItems}
-          currentIndex={selectedMediaIndex}
-          onClose={handleCloseMedia}
-          onNext={handleNextMedia}
-          onPrev={handlePrevMedia}
-        />
-      )}
-    </>
+    <div className="flex flex-col min-h-screen">
+      <main className="flex-1">
+        <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-gradient-to-r from-primary/10 to-accent/10">
+          <div className="container px-4 md:px-6">
+            <div className="flex flex-col items-center space-y-4 text-center">
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
+                  Welcome to Your Digital Universe
+                </h1>
+                <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
+                  Securely store your memories in the Green Vault, and earn MythicalCoins to unlock new possibilities.
+                </p>
+              </div>
+              <div className="space-x-4">
+                <Button asChild>
+                  <Link href="/gallery">Enter Green Vault</Link>
+                </Button>
+                <Button variant="secondary" asChild>
+                  <Link href="/earn">Earn MythicalCoins</Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section className="w-full py-12 md:py-24 lg:py-32">
+          <div className="container grid items-center justify-center gap-4 px-4 text-center md:px-6 lg:gap-10">
+            <div className="space-y-3">
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Features</h2>
+              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                Explore the core features of our platform.
+              </p>
+            </div>
+            <div className="mx-auto grid max-w-5xl items-start gap-6 sm:grid-cols-2 md:gap-12 lg:grid-cols-3">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Mountain className="h-6 w-6 text-primary" />
+                    Green Vault
+                  </CardTitle>
+                  <CardDescription>Your private and secure gallery for photos and videos. Built for privacy, designed for you.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link href="/gallery">Go to Gallery</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Gem className="h-6 w-6 text-accent" />
+                    MythicalCoins
+                  </CardTitle>
+                  <CardDescription>Earn our exclusive virtual currency. Watch ads, complete tasks, and get rewarded.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                   <Button variant="outline" className="w-full" asChild>
+                    <Link href="/earn">Start Earning</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Video className="h-6 w-6 text-destructive" />
+                    Video Support
+                  </CardTitle>
+                  <CardDescription>Not just for photos! Upload, store, and view your favorite video moments seamlessly.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                   <Button variant="outline" className="w-full" asChild>
+                    <Link href="/gallery">View Videos</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+      </main>
+      <footer className="flex items-center justify-center w-full h-16 border-t">
+        <p className="text-xs text-muted-foreground">&copy; 2024 Mythic Vault. All rights reserved.</p>
+      </footer>
+    </div>
   );
 }
