@@ -27,11 +27,17 @@ export default function EarnPage() {
     }
   }, [router]);
 
+  // This useEffect simulates an ad being watched.
+  // In a real app, your ad network's SDK would provide a callback
+  // for when the ad is completed (e.g., onAdComplete). You would call
+  // handleEarnCoins() inside that callback instead of using this timer.
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (isWatching && progress < 100) {
+      // Simulates progress, takes 5 seconds to complete
       timer = setTimeout(() => setProgress(prev => prev + 1), 50);
     } else if (progress >= 100) {
+      // When "ad" is finished, award the coins.
       handleEarnCoins();
     }
     return () => clearTimeout(timer);
@@ -96,6 +102,12 @@ export default function EarnPage() {
             </Button>
           ) : (
             <div className="w-full max-w-sm text-center">
+              {/* 
+                PLACE YOUR AD UNIT HERE:
+                This is where you would render your ad component from your ad network.
+                The simulation logic in the useEffect hook above shows how to
+                grant the reward after the ad is complete.
+              */}
               <p className="mb-2 text-muted-foreground">Simulating ad playback...</p>
               <Progress value={progress} className="w-full" />
               <p className="mt-2 text-sm font-semibold">{progress}%</p>
