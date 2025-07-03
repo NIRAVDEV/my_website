@@ -7,13 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Gem, Loader2, PlayCircle, Star } from 'lucide-react';
 import type { User } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { Progress } from '@/components/ui/progress';
+import AdUnit from '@/components/ad-unit';
 
 export default function EarnPage() {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isWatching, setIsWatching] = useState(false);
-  const [progress, setProgress] = useState(0);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -27,26 +26,8 @@ export default function EarnPage() {
     }
   }, [router]);
 
-  // This useEffect simulates an ad being watched.
-  // In a real app, your ad network's SDK would provide a callback
-  // for when the ad is completed (e.g., onAdComplete). You would call
-  // handleEarnCoins() inside that callback instead of using this timer.
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (isWatching && progress < 100) {
-      // Simulates progress, takes 5 seconds to complete
-      timer = setTimeout(() => setProgress(prev => prev + 1), 50);
-    } else if (progress >= 100) {
-      // When "ad" is finished, award the coins.
-      handleEarnCoins();
-    }
-    return () => clearTimeout(timer);
-  }, [isWatching, progress]);
-
-
   const handleWatchAd = () => {
     setIsWatching(true);
-    setProgress(1);
   };
 
   const handleEarnCoins = () => {
@@ -63,7 +44,6 @@ export default function EarnPage() {
       });
     }
     setIsWatching(false);
-    setProgress(0);
   };
 
   if (!isAuthenticated) {
@@ -101,21 +81,18 @@ export default function EarnPage() {
               Watch Ad
             </Button>
           ) : (
-            <div className="w-full max-w-sm text-center">
+            <>
               {/* 
-                PLACE YOUR AD UNIT HERE:
-                This is where you would render your ad component from your ad network.
-                The simulation logic in the useEffect hook above shows how to
-                grant the reward after the ad is complete.
+                This is where you would place your ad component from your ad network.
+                The onAdComplete callback should be triggered when the ad is finished,
+                which then calls our handleEarnCoins function to grant the reward.
               */}
-              <p className="mb-2 text-muted-foreground">Simulating ad playback...</p>
-              <Progress value={progress} className="w-full" />
-              <p className="mt-2 text-sm font-semibold">{progress}%</p>
-            </div>
+              <AdUnit onAdComplete={handleEarnCoins} />
+            </>
           )}
 
           <p className="text-xs text-muted-foreground max-w-md text-center">
-            In a real application, this would display a video advertisement. For this demo, we simulate the ad with a progress bar.
+            Your ad network will provide instructions on how to integrate their ad units.
           </p>
         </CardContent>
       </Card>
