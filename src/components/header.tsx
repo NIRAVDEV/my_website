@@ -1,9 +1,10 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Gem, LogIn, LogOut, ShieldCheck, Menu } from 'lucide-react';
+import { Gem, LogIn, LogOut, ShieldCheck, Menu, UserCog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import type { User } from '@/types';
@@ -43,15 +44,19 @@ export default function Header() {
     router.push('/login');
   };
 
-  const navLinks = [
+  const baseNavLinks = [
     { href: '/gallery', label: 'Gallery' },
     { href: '/earn', label: 'Earn Coins' },
     { href: '/redeem', label: 'Redeem' },
   ];
 
+  const navLinks = user?.username === 'Admin'
+    ? [...baseNavLinks, { href: '/admin', label: 'Admin', icon: <UserCog/> }]
+    : baseNavLinks;
+  
   const NavLink = ({ href, children }: { href: string, children: React.ReactNode }) => (
     <Link href={href} className={cn(
-      "transition-colors hover:text-foreground",
+      "transition-colors hover:text-foreground flex items-center gap-2",
       pathname === href ? "text-foreground" : "text-muted-foreground"
     )}>
       {children}
@@ -86,7 +91,7 @@ export default function Header() {
             <span className="hidden font-bold sm:inline-block">MythicVault</span>
           </Link>
           <nav className="flex items-center space-x-6 text-sm font-medium">
-            {navLinks.map(link => <NavLink key={link.href} href={link.href}>{link.label}</NavLink>)}
+            {navLinks.map(link => <NavLink key={link.href} href={link.href}>{link.icon}{link.label}</NavLink>)}
           </nav>
         </div>
         <div className="md:hidden">
