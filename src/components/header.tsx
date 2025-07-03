@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Gem, LogIn, LogOut, ShieldCheck, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import type { User } from '@/types';
 import { cn } from '@/lib/utils';
 
@@ -97,6 +97,10 @@ export default function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left">
+                <SheetHeader className="sr-only">
+                    <SheetTitle>Menu</SheetTitle>
+                    <SheetDescription>Main navigation menu.</SheetDescription>
+                </SheetHeader>
                <div className="p-4">
                  <Link href="/" className="mb-8 flex items-center space-x-2">
                     <ShieldCheck className="h-6 w-6 text-primary" />
