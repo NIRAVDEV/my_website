@@ -14,9 +14,10 @@ import type { RedemptionRequest, User } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { supabase } from '@/lib/supabaseClient';
+import { Switch } from '@/components/ui/switch';
 
 // A lightweight type for displaying users in the admin panel
-type DisplayUser = { id: string; username: string; mythical_coins: number; created_at: string; };
+type DisplayUser = { id: string; username: string; mythical_coins: number; created_at: string; is_admin: boolean };
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -31,6 +32,7 @@ export default function AdminPage() {
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [newUserIsAdmin, setNewUserIsAdmin] = useState(false);
   const [isCreatingUser, setIsCreatingUser] = useState(false);
   
   const router = useRouter();
@@ -39,8 +41,8 @@ export default function AdminPage() {
   useEffect(() => {
     const storedUser = sessionStorage.getItem('user');
     if (storedUser) {
-      const user = JSON.parse(storedUser);
-      if (user.username === 'Admin') {
+      const user: User = JSON.parse(storedUser);
+      if (user.is_admin) {
         setIsAuthenticated(true);
       } else {
         router.replace('/gallery');
@@ -90,7 +92,7 @@ export default function AdminPage() {
       try {
         const { data, error } = await supabase
           .from('users')
-          .select('id, username, mythical_coins, created_at')
+          .select('id, username, mythical_coins, created_at, is_admin')
           .order('created_at', { ascending: false });
         if (error) throw error;
         setUsers(data || []);
@@ -150,8 +152,8 @@ export default function AdminPage() {
     try {
       const { data, error } = await supabase
         .from('users')
-        .insert({ username: newUsername, password: newPassword, mythical_coins: 0 })
-        .select('id, username, mythical_coins, created_at')
+        .insert({ username: newUsername, password: newPassword, mythical_coins: 0, is_admin: newUserIsAdmin })
+        .select('id, username, mythical_coins, created_at, is_admin')
         .single();
 
       if (error) throw error;
@@ -159,6 +161,7 @@ export default function AdminPage() {
       setUsers([data, ...users]);
       setNewUsername('');
       setNewPassword('');
+      setNewUserIsAdmin(false);
       toast({ title: "User Created", description: `Account for ${newUsername} has been created.` });
     } catch (error) {
       console.error("Failed to create user:", error);
@@ -195,7 +198,7 @@ export default function AdminPage() {
           <CardDescription>Create new user accounts and view existing ones.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleCreateUser} className="grid md:grid-cols-3 gap-4 mb-6 p-4 border rounded-lg">
+          <form onSubmit={handleCreateUser} className="grid md:grid-cols-4 gap-4 mb-6 p-4 border rounded-lg">
             <div className="space-y-2">
               <Label htmlFor="new-username">Username</Label>
               <Input id="new-username" value={newUsername} onChange={(e) => setNewUsername(e.target.value)} placeholder="New username" disabled={isCreatingUser} />
@@ -203,6 +206,12 @@ export default function AdminPage() {
             <div className="space-y-2">
               <Label htmlFor="new-password">Password</Label>
               <Input id="new-password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="New password" disabled={isCreatingUser} />
+            </div>
+             <div className="flex items-end space-y-2">
+                <div className="flex items-center space-x-2 h-10">
+                    <Switch id="is-admin" checked={newUserIsAdmin} onCheckedChange={setNewUserIsAdmin} disabled={isCreatingUser} />
+                    <Label htmlFor="is-admin">Is Admin?</Label>
+                </div>
             </div>
             <div className="flex items-end">
               <Button type="submit" className="w-full" disabled={isCreatingUser}>
@@ -219,6 +228,7 @@ export default function AdminPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Username</TableHead>
+                  <TableHead>Admin Status</TableHead>
                   <TableHead>MythicalCoins</TableHead>
                   <TableHead>Date Created</TableHead>
                 </TableRow>
@@ -227,11 +237,18 @@ export default function AdminPage() {
                 {users.length > 0 ? users.map(user => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.username}</TableCell>
+                    <TableCell>
+                      {user.is_admin ? (
+                        <Badge>Admin</Badge>
+                      ) : (
+                        <Badge variant="secondary">User</Badge>
+                      )}
+                    </TableCell>
                     <TableCell>{user.mythical_coins}</TableCell>
                     <TableCell>{format(new Date(user.created_at), 'PPp')}</TableCell>
                   </TableRow>
                 )) : (
-                  <TableRow><TableCell colSpan={3} className="text-center">No users found.</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={4} className="text-center">No users found.</TableCell></TableRow>
                 )}
               </TableBody>
             </Table>

@@ -9,6 +9,7 @@ export interface User {
   id: string;
   username: string;
   mythicalCoins: number;
+  is_admin: boolean;
 }
 
 export interface RedemptionRequest {

@@ -45,7 +45,7 @@ export default function LoginPage() {
     try {
       const { data: foundUser, error } = await supabase
         .from('users')
-        .select('id, username, mythical_coins')
+        .select('id, username, mythical_coins, is_admin')
         .eq('username', data.username)
         .eq('password', data.password) // IMPORTANT: In production, hash passwords.
         .single();
@@ -58,6 +58,7 @@ export default function LoginPage() {
         id: foundUser.id,
         username: foundUser.username,
         mythicalCoins: foundUser.mythical_coins,
+        is_admin: foundUser.is_admin,
       };
 
       sessionStorage.setItem('user', JSON.stringify(userToStore));

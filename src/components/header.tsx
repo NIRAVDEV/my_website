@@ -50,7 +50,7 @@ export default function Header() {
     { href: '/redeem', label: 'Redeem' },
   ];
 
-  const navLinks = user?.username === 'Admin'
+  const navLinks = user?.is_admin
     ? [...baseNavLinks, { href: '/admin', label: 'Admin', icon: <UserCog/> }]
     : baseNavLinks;
   
