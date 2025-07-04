@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import Script from 'next/script';
 
 type AdUnitProps = {
   onAdComplete: () => void;
@@ -22,25 +23,21 @@ export default function AdUnit({ onAdComplete }: AdUnitProps) {
   return (
     <div className="w-full max-w-sm text-center">
       {/* 
-        This is where you would place the script from your ad network.
-        To use it, you'll need to:
-        1. Uncomment the <Script> component below.
-        2. Add `import Script from 'next/script';` at the top of this file.
-        3. Replace the placeholder 'src' with your actual ad network script URL.
+        The Google Adsense script has been added below.
+        It will load when this component is displayed on the "Earn" page.
       */}
-      {/*
       <Script
-        src="https://your-ad-network.com/ad-script.js" // <-- REPLACE with your ad network's script URL
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2381415266328532"
         strategy="lazyOnload"
+        crossOrigin="anonymous"
         onLoad={() => {
-          console.log('Ad script loaded. You would initialize your ad unit here.');
-          // Example: window.myAdNetwork.initAd('ad-container');
+          console.log('Ad script loaded. You may need to initialize your ad unit here.');
+          // For example: (window.adsbygoogle = window.adsbygoogle || []).push({});
         }}
         onError={(e) => {
           console.error('Failed to load ad script', e);
         }}
       />
-      */}
       
       {/* 
         This is a placeholder for where the ad would be displayed.
