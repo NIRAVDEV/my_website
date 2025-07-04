@@ -12,12 +12,14 @@ import { Loader2, Shield } from 'lucide-react';
 import type { RedemptionRequest } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [requests, setRequests] = useState<RedemptionRequest[]>([]);
   const [isProcessing, setIsProcessing] = useState<Record<string, boolean>>({});
   const [codes, setCodes] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -37,15 +39,46 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      const storedRequests = localStorage.getItem('redemptionRequests');
-      if (storedRequests) {
-        const parsedRequests: RedemptionRequest[] = JSON.parse(storedRequests);
-        setRequests(parsedRequests.sort((a, b) => b.createdAt - a.createdAt));
-      }
+      const fetchRequests = async () => {
+        setIsLoading(true);
+        try {
+          const { data, error } = await supabase
+            .from('redemption_requests')
+            .select('*')
+            .order('created_at', { ascending: false });
+          
+          if (error) throw error;
+          
+          if (data) {
+            const parsedRequests: RedemptionRequest[] = data.map((r: any) => ({
+              id: r.id,
+              username: r.username,
+              type: r.type,
+              recipient: r.recipient,
+              amount: r.amount,
+              status: r.status,
+              createdAt: new Date(r.created_at).getTime(),
+              completedAt: r.completed_at ? new Date(r.completed_at).getTime() : undefined,
+              code: r.code || undefined,
+            }));
+            setRequests(parsedRequests);
+          }
+        } catch (error) {
+          console.error("Failed to fetch requests:", error);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Could not load requests from the database.",
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchRequests();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, toast]);
 
-  const handleProcessRequest = (requestId: string) => {
+  const handleProcessRequest = async (requestId: string) => {
     const code = codes[requestId] || '';
     const request = requests.find(r => r.id === requestId);
 
@@ -62,12 +95,22 @@ export default function AdminPage() {
     
     setIsProcessing(prev => ({...prev, [requestId]: true}));
 
-    // Simulate API call to process payment and send email
-    setTimeout(() => {
+    try {
+      // Update the request in Supabase
+      const { data, error } = await supabase
+        .from('redemption_requests')
+        .update({ status: 'completed', completed_at: new Date().toISOString(), code: code || null })
+        .eq('id', requestId)
+        .select()
+        .single();
+      
+      if (error) throw error;
+
+      // Update local state to reflect the change instantly
+      const completedAt = data.completed_at ? new Date(data.completed_at).getTime() : Date.now();
       const updatedRequests = requests.map(r => 
-        r.id === requestId ? { ...r, status: 'completed', completedAt: Date.now(), code } : r
+        r.id === requestId ? { ...r, status: 'completed', completedAt, code } : r
       );
-      localStorage.setItem('redemptionRequests', JSON.stringify(updatedRequests));
       setRequests(updatedRequests);
       
       // TODO: This is where you would call your backend to send an email.
@@ -77,9 +120,17 @@ export default function AdminPage() {
         title: 'Request Processed',
         description: `The request for ${request.recipient} has been marked as complete.`,
       });
-      
-      setIsProcessing(prev => ({...prev, [requestId]: false}));
-    }, 1000);
+
+    } catch(err) {
+       console.error("Failed to process request:", err);
+       toast({
+            variant: "destructive",
+            title: "Update Failed",
+            description: "Could not update the request in the database.",
+       });
+    } finally {
+        setIsProcessing(prev => ({...prev, [requestId]: false}));
+    }
   };
 
   const handleCodeChange = (requestId: string, value: string) => {
@@ -112,49 +163,55 @@ export default function AdminPage() {
           <CardDescription>Review and process new redemption requests.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Recipient</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="w-[350px]">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pendingRequests.length > 0 ? pendingRequests.map(req => (
-                <TableRow key={req.id}>
-                  <TableCell>{req.username}</TableCell>
-                  <TableCell>
-                    <Badge variant={req.type === 'google_play' ? 'secondary' : 'default'}>{req.type.replace('_', ' ')}</Badge>
-                  </TableCell>
-                  <TableCell>{req.recipient}</TableCell>
-                  <TableCell>{format(new Date(req.createdAt), 'PPp')}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                       {req.type === 'google_play' ? (
-                          <Input 
-                            type="text" 
-                            placeholder="Enter redeem code"
-                            value={codes[req.id] || ''}
-                            onChange={(e) => handleCodeChange(req.id, e.target.value)}
-                            disabled={isProcessing[req.id]}
-                           />
-                       ) : <div className="w-full" /> }
-                      <Button onClick={() => handleProcessRequest(req.id)} disabled={isProcessing[req.id]}>
-                        {isProcessing[req.id] ? <Loader2 className="animate-spin" /> : 'Process'}
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )) : (
+          {isLoading ? (
+            <div className="flex justify-center items-center h-24">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center">No pending requests.</TableCell>
+                  <TableHead>User</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Recipient</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead className="w-[350px]">Action</TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {pendingRequests.length > 0 ? pendingRequests.map(req => (
+                  <TableRow key={req.id}>
+                    <TableCell>{req.username}</TableCell>
+                    <TableCell>
+                      <Badge variant={req.type === 'google_play' ? 'secondary' : 'default'}>{req.type.replace('_', ' ')}</Badge>
+                    </TableCell>
+                    <TableCell>{req.recipient}</TableCell>
+                    <TableCell>{format(new Date(req.createdAt), 'PPp')}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                         {req.type === 'google_play' ? (
+                            <Input 
+                              type="text" 
+                              placeholder="Enter redeem code"
+                              value={codes[req.id] || ''}
+                              onChange={(e) => handleCodeChange(req.id, e.target.value)}
+                              disabled={isProcessing[req.id]}
+                             />
+                         ) : <div className="w-full" /> }
+                        <Button onClick={() => handleProcessRequest(req.id)} disabled={isProcessing[req.id]}>
+                          {isProcessing[req.id] ? <Loader2 className="animate-spin" /> : 'Process'}
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center">No pending requests.</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
       

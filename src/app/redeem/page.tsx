@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Gift, IndianRupee, Loader2, Mail } from 'lucide-react';
 import type { User, RedemptionRequest } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabaseClient';
 
 const REDEMPTION_COST = 1000;
 
@@ -31,7 +32,7 @@ export default function RedeemPage() {
     }
   }, [router]);
 
-  const handleRedemption = (type: 'google_play' | 'upi') => {
+  const handleRedemption = async (type: 'google_play' | 'upi') => {
     if (!user || user.mythicalCoins < REDEMPTION_COST) {
       toast({
         variant: 'destructive',
@@ -60,26 +61,25 @@ export default function RedeemPage() {
     
     setIsRedeeming(true);
     
-    // Simulate API call to submit redemption request
-    setTimeout(() => {
-      // 1. Create the request object
-      const newRequest: RedemptionRequest = {
-        id: `req_${Date.now()}`,
+    try {
+      // 1. Create the request object for Supabase
+      const newRequest = {
         username: user.username,
         type: type,
         recipient: recipient,
         amount: REDEMPTION_COST,
-        status: 'pending',
-        createdAt: Date.now(),
+        // status, id, and created_at are handled by the database
       };
       
-      // 2. Save request to local storage (for simulation)
-      // In a real app, this would be an API call to your backend.
-      const existingRequests: RedemptionRequest[] = JSON.parse(localStorage.getItem('redemptionRequests') || '[]');
-      existingRequests.push(newRequest);
-      localStorage.setItem('redemptionRequests', JSON.stringify(existingRequests));
+      // 2. Save request to Supabase
+      const { error } = await supabase.from('redemption_requests').insert(newRequest);
 
-      // 3. Update user's coin balance
+      if (error) {
+        throw error;
+      }
+      
+      // 3. Update user's coin balance locally
+      // In a real app, coin balance would also be stored in the database.
       const updatedUser = { ...user, mythicalCoins: user.mythicalCoins - REDEMPTION_COST };
       setUser(updatedUser);
       sessionStorage.setItem('user', JSON.stringify(updatedUser));
@@ -91,10 +91,19 @@ export default function RedeemPage() {
         description: 'Your request is being processed. You will receive your reward within 24 hours.',
       });
 
-      setIsRedeeming(false);
       setEmail('');
       setUpiId('');
-    }, 1000);
+
+    } catch (error) {
+       console.error("Redemption failed:", error);
+       toast({
+        variant: 'destructive',
+        title: 'Submission Failed',
+        description: 'There was an error submitting your request. Please try again.',
+       });
+    } finally {
+      setIsRedeeming(false);
+    }
   };
 
   if (!isAuthenticated || !user) {
