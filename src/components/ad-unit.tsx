@@ -2,7 +2,6 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import Script from 'next/script';
 
 type AdUnitProps = {
   onAdComplete: () => void;
@@ -23,21 +22,10 @@ export default function AdUnit({ onAdComplete }: AdUnitProps) {
   return (
     <div className="w-full max-w-sm text-center">
       {/* 
-        The Google Adsense script has been added below.
-        It will load when this component is displayed on the "Earn" page.
+        This is where you would place your ad component from your ad network.
+        The onAdComplete callback should be triggered when the ad is finished,
+        which then calls our handleEarnCoins function to grant the reward.
       */}
-      <Script
-        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2381415266328532"
-        strategy="lazyOnload"
-        crossOrigin="anonymous"
-        onLoad={() => {
-          console.log('Ad script loaded. You may need to initialize your ad unit here.');
-          // For example: (window.adsbygoogle = window.adsbygoogle || []).push({});
-        }}
-        onError={(e) => {
-          console.error('Failed to load ad script', e);
-        }}
-      />
       
       {/* 
         This is a placeholder for where the ad would be displayed.
