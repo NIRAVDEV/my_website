@@ -18,18 +18,13 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { ShieldCheck, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { supabase } from '@/lib/supabaseClient';
+import type { User } from '@/types';
 
 const FormSchema = z.object({
   username: z.string().min(1, { message: "Username is required." }),
   password: z.string().min(1, { message: "Password is required." }),
 });
-
-// Hardcoded user for demonstration purposes
-const SERVER_ACCOUNTS = [
-    { username: "mythical_user", password: "password123", mythicalCoins: 0 },
-    { username: "gallery_fan", password: "secure_password", mythicalCoins: 0 },
-    { username: "Admin", password: "admin123", mythicalCoins: 0 },
-];
 
 export default function LoginPage() {
   const { toast } = useToast();
@@ -44,35 +39,45 @@ export default function LoginPage() {
     },
   });
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
+  async function onSubmit(data: z.infer<typeof FormSchema>) {
     setIsLoading(true);
     
-    setTimeout(() => {
-      const foundUser = SERVER_ACCOUNTS.find(
-        (acc) => acc.username === data.username && acc.password === data.password
-      );
+    try {
+      const { data: foundUser, error } = await supabase
+        .from('users')
+        .select('id, username, mythical_coins')
+        .eq('username', data.username)
+        .eq('password', data.password) // IMPORTANT: In production, hash passwords.
+        .single();
 
-      if (foundUser) {
-        // Don't store password in session storage
-        const { password, ...userToStore } = foundUser;
-        sessionStorage.setItem('user', JSON.stringify(userToStore));
-        // Dispatch custom event to notify header
-        window.dispatchEvent(new CustomEvent('sessionStorageChange'));
-        toast({
-          title: "Login Successful",
-          description: `Welcome back, ${userToStore.username}!`,
-        });
-        router.push('/gallery');
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Login Failed",
-          description: "Invalid username or password. Please try again.",
-        });
-        setIsLoading(false);
-        form.reset();
+      if (error || !foundUser) {
+        throw new Error('Invalid credentials');
       }
-    }, 500);
+      
+      const userToStore: User = {
+        id: foundUser.id,
+        username: foundUser.username,
+        mythicalCoins: foundUser.mythical_coins,
+      };
+
+      sessionStorage.setItem('user', JSON.stringify(userToStore));
+      window.dispatchEvent(new CustomEvent('sessionStorageChange'));
+
+      toast({
+        title: "Login Successful",
+        description: `Welcome back, ${userToStore.username}!`,
+      });
+      router.push('/gallery');
+
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: "Invalid username or password. Please try again.",
+      });
+      setIsLoading(false);
+      form.reset();
+    }
   }
 
   return (

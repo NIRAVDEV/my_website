@@ -8,11 +8,13 @@ import { Gem, Loader2, PlayCircle, Star } from 'lucide-react';
 import type { User } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import AdUnit from '@/components/ad-unit';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function EarnPage() {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isWatching, setIsWatching] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -30,20 +32,48 @@ export default function EarnPage() {
     setIsWatching(true);
   };
 
-  const handleEarnCoins = () => {
+  const handleEarnCoins = async () => {
+    if (isSaving || !user) return;
+    
+    setIsSaving(true);
     const amount = 10;
-    if (user) {
-      const updatedUser = { ...user, mythicalCoins: user.mythicalCoins + amount };
-      setUser(updatedUser);
-      sessionStorage.setItem('user', JSON.stringify(updatedUser));
-      // Dispatch custom event to notify header
-      window.dispatchEvent(new CustomEvent('sessionStorageChange'));
+    const newCoins = user.mythicalCoins + amount;
+
+    // Optimistically update the UI
+    const updatedUser = { ...user, mythicalCoins: newCoins };
+    setUser(updatedUser);
+    sessionStorage.setItem('user', JSON.stringify(updatedUser));
+    window.dispatchEvent(new CustomEvent('sessionStorageChange'));
+    setIsWatching(false);
+
+    try {
+      // Update the database
+      const { error } = await supabase
+        .from('users')
+        .update({ mythical_coins: newCoins })
+        .eq('id', user.id);
+      
+      if (error) throw error;
+      
       toast({
         title: 'Coins Earned!',
         description: `You've earned ${amount} MythicalCoins.`,
       });
+
+    } catch (error) {
+      console.error("Failed to update coins:", error);
+      toast({
+        variant: "destructive",
+        title: "Sync Error",
+        description: "Could not save your new coin balance. Reverting.",
+      });
+      // Revert optimistic update on failure
+      setUser(user);
+      sessionStorage.setItem('user', JSON.stringify(user));
+      window.dispatchEvent(new CustomEvent('sessionStorageChange'));
+    } finally {
+      setIsSaving(false);
     }
-    setIsWatching(false);
   };
 
   if (!isAuthenticated) {
@@ -77,8 +107,8 @@ export default function EarnPage() {
           </div>
 
           {!isWatching ? (
-            <Button size="lg" className="h-14 text-xl px-10" onClick={handleWatchAd}>
-              Watch Ad
+            <Button size="lg" className="h-14 text-xl px-10" onClick={handleWatchAd} disabled={isSaving}>
+              { isSaving ? <Loader2 className="animate-spin" /> : 'Watch Ad' }
             </Button>
           ) : (
             <>
