@@ -8,7 +8,6 @@ import { Gem, Loader2, PlayCircle, Star } from 'lucide-react';
 import type { User } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import AdUnit from '@/components/ad-unit';
-import { supabase } from '@/lib/supabaseClient';
 
 export default function EarnPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -112,12 +111,11 @@ export default function EarnPage() {
             </Button>
           ) : (
             <>
-              {/* 
-                This is where you would place your ad component from your ad network.
-                The onAdComplete callback should be triggered when the ad is finished,
-                which then calls our handleEarnCoins function to grant the reward.
-              */}
-              <AdUnit onAdComplete={handleEarnCoins} />
+ <div className="text-center">
+ <p>Loading ad...</p>
+ {/* Temporary button to test earning coins */}
+ <Button onClick={handleEarnCoins} className="mt-4">Manual Earn (Testing)</Button>
+ </div>
             </>
           )}
 
