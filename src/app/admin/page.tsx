@@ -76,9 +76,10 @@ export default function AdminPage() {
           }));
           setRequests(parsedRequests);
         }
-      } catch (error) {
+      } catch (err) {
+        const error = err as any;
         console.error("Failed to fetch requests:", error);
-        toast({ variant: "destructive", title: "Error", description: "Could not load requests." });
+        toast({ variant: "destructive", title: "Error", description: error.message || "Could not load requests." });
       } finally {
         setIsLoadingRequests(false);
       }
@@ -93,9 +94,10 @@ export default function AdminPage() {
           .order('created_at', { ascending: false });
         if (error) throw error;
         setUsers(data || []);
-      } catch (error) {
+      } catch (err) {
+        const error = err as any;
         console.error("Failed to fetch users:", error);
-        toast({ variant: "destructive", title: "Error", description: "Could not load users." });
+        toast({ variant: "destructive", title: "Error", description: error.message || "Could not load users." });
       } finally {
         setIsLoadingUsers(false);
       }
