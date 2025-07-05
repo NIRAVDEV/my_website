@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Gem, Loader2, PlayCircle, Star } from 'lucide-react';
+import { Gem, Loader2, PlayCircle, Star, Link } from 'lucide-react';
 import type { User } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabaseClient';
@@ -126,38 +126,68 @@ export default function EarnPage() {
         <p className="mt-4 text-lg text-muted-foreground">Complete simple tasks to earn currency for new features.</p>
       </div>
       
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3">
-            <PlayCircle className="h-8 w-8 text-primary" />
-            <span className="text-2xl">Watch & Earn</span>
-          </CardTitle>
-          <CardDescription>Click the button, and after 10 seconds, you'll receive a reward.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center justify-center space-y-6 pt-4">
-          <div className="flex items-center gap-2 text-2xl font-bold text-accent">
-            <Gem className="h-7 w-7" />
-            <span>Reward: Up to 20 MythicalCoins</span>
-          </div>
-
-          {!isWatching ? (
-            <Button size="lg" className="h-14 text-xl px-10" onClick={handleWatchAd} disabled={isSaving}>
-              { isSaving ? <Loader2 className="animate-spin" /> : 'Watch Ad' }
-            </Button>
-          ) : (
-            <div className="text-center space-y-4">
-              <p className="text-lg font-semibold">Time remaining: {timer} seconds</p>
-              <p className="text-sm text-muted-foreground">
-                Your reward will be credited automatically. Do not download anything from the links.
-              </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3">
+              <PlayCircle className="h-8 w-8 text-primary" />
+              <span className="text-2xl">Watch & Earn</span>
+            </CardTitle>
+            <CardDescription>Click the button, and after 10 seconds, you'll receive a reward.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center justify-center space-y-6 pt-4">
+            <div className="flex items-center gap-2 text-2xl font-bold text-accent">
+              <Gem className="h-7 w-7" />
+              <span>Reward: Up to 20 MythicalCoins</span>
             </div>
-          )}
 
-          <p className="text-xs text-muted-foreground max-w-md text-center">
-            Your ad network will provide instructions on how to integrate their ad units.
-          </p>
-        </CardContent>
-      </Card>
+            {!isWatching ? (
+              <Button size="lg" className="h-14 text-xl px-10" onClick={handleWatchAd} disabled={isSaving}>
+                { isSaving ? <Loader2 className="animate-spin" /> : 'Watch Ad' }
+              </Button>
+            ) : (
+              <div className="text-center space-y-4">
+                <p className="text-lg font-semibold">Time remaining: {timer} seconds</p>
+                <p className="text-sm text-muted-foreground">
+                  Your reward will be credited automatically. Do not download anything from the links.
+                </p>
+              </div>
+            )}
+
+            <p className="text-xs text-muted-foreground max-w-md text-center">
+              This is a timer-based reward. You must wait for the timer to complete.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3">
+              <Link className="h-8 w-8 text-primary" />
+              <span className="text-2xl">Complete Link Task</span>
+            </CardTitle>
+            <CardDescription>
+              Click the link, complete the task, and your reward will be added when you return.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center justify-center space-y-6 pt-4">
+            <div className="flex items-center gap-2 text-2xl font-bold text-accent">
+              <Gem className="h-7 w-7" />
+              <span>Reward: 10 MythicalCoins</span>
+            </div>
+
+            <Button asChild size="lg" className="h-14 text-xl px-10">
+              <a href="https://link-hub.net/1368158/KQnjB6gXBEqt" target="_blank" rel="noopener noreferrer">
+                Start Task
+              </a>
+            </Button>
+
+            <p className="text-xs text-muted-foreground max-w-md text-center">
+              Your reward is processed automatically via a redirect page after task completion.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="mt-16">
           <h3 className="text-2xl font-bold text-center mb-8">More Ways to Earn (Coming Soon)</h3>
