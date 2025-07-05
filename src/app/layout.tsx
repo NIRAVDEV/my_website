@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import Header from '@/components/header';
 import Script from 'next/script';
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: 'Mythic Vault',
@@ -29,6 +30,8 @@ export default function RootLayout({
  id="click-to-earn-ad-script"
  strategy="afterInteractive"
  dangerouslySetInnerHTML={{
+ __html: '',
+
  }}
  />
       </head>
