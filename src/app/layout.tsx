@@ -21,19 +21,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
-        {/* Commented out banner ad script */}
         <Script src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2381415266328532" crossOrigin='anonymous'/>
-        {/* Commented out highperformanceformat ad script */}
-        <Script src="//www.highperformanceformat.com/c44fcd23ec37605b7c29e81c6be197fd/invoke.js" strategy="afterInteractive" />
-        {/* Click to earn ad script */}
- <Script
- id="click-to-earn-ad-script"
- strategy="afterInteractive"
- dangerouslySetInnerHTML={{
- __html: '',
-
- }}
- />
       </head>
       <body className="font-body antialiased bg-background text-foreground">
         <Header />
